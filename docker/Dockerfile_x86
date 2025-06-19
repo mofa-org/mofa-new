@@ -29,7 +29,7 @@ RUN mkdir -p /project && \
     cd /project && \
     git clone https://github.com/mofa-org/mofa.git && \
     cd mofa && \
-    cd /project/mofa/python && \
+    cd /project/mofa && \
     pip3 install --upgrade pip --index-url https://pypi.org/simple && \
     pip install --upgrade --ignore-installed blinker && \
     pip3 install uv && uv pip install --system -e . &&  pip3 install -e .
