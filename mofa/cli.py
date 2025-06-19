@@ -119,12 +119,13 @@ def run(agent_name: str = 'reasoner'):
 @click.argument('agent_name', required=True)
 @click.option('--version', default='0.0.1', help='Version of the new agent')
 @click.option('--output', default=os.getcwd()+"/", help='agent output path')
-@click.option('--authors', default='Zonghuan Wu', help='authors')
+@click.option('--authors', default='Mofa Bot', help='authors')
 def new_agent(agent_name: str, version: str, output: str, authors: str):
     """Create a new agent from the template with configuration options using Cookiecutter."""
 
     # Define the template directory
-    template_dir = os.path.join(os.path.dirname(agent_dir_path), 'agent-hub', 'agent-template')
+    # template_dir = os.path.join(os.path.dirname(agent_dir_path), 'agent-hub', 'agent-template')
+    template_dir = os.path.join(agent_dir_path,'agent-template')
 
     # Ensure the template directory exists and contains cookiecutter.json
     if not os.path.exists(template_dir):
