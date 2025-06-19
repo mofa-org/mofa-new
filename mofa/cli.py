@@ -7,7 +7,6 @@ from mofa import agent_dir_path
 
 import click
 import sys
-from mofa.run.agent_evealution import agent_evaluation_cmd
 from mofa.utils.files.dir import get_subdirectories
 from mofa.utils.process.util import stop_process, stop_dora_dataflow
 
@@ -28,12 +27,7 @@ def agent_list():
     click.echo(agent_names)
     return agent_names
 
-@mofa_cli_group.command()
-def evaluation():
-    """
-    Score and compare the results of agents
-    """
-    agent_evaluation_cmd()
+
 
 @mofa_cli_group.command()
 @click.option('--agent-name', default='reasoner', help='agent name')

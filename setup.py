@@ -17,7 +17,7 @@ test_requirements = []
 setup(
     name='mofa-ai',
     author='Cheng Chen, ZongHuan Wu',
-    author_email='chenzi00103@gmail.net, zonghuan.wu@gmail.com',
+    author_email='chenzi00103@gmail.com, zonghuan.wu@gmail.com',
     description='MoFA is a software framework for building AI agents through a composition-based approach.',
     python_requires='>=3.10',
     classifiers=[
@@ -35,8 +35,8 @@ setup(
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='mofa',
-    packages=find_packages(where='python', include=['mofa', 'mofa.*']),
-    package_dir={'mofa': 'python/mofa'},
+    packages=find_packages(where='mofa', include=['mofa', 'mofa.*']),
+    package_dir={'mofa': 'mofa'},
     test_suite='tests',
     tests_require=test_requirements,
     version='0.2.0',

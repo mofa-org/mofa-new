@@ -5,9 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-.cursor
-.cadence
-.vscode
+
 # Distribution / packaging
 .Python
 env/
@@ -53,7 +51,7 @@ coverage.xml
 # Translations
 *.mo
 *.pot
-.cadence/
+
 # Django stuff:
 *.log
 local_settings.py
@@ -111,8 +109,6 @@ poetry.lock
 .env.secret
 
 /.iml/
-demo/
-local_cache/
-
-# Node.js
-node_modules/
+out/**
+local_cache/**
+data/**

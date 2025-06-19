@@ -1,88 +1,421 @@
-# **MoFA**
+# **1、MoFA开发框架**
 
 [English](README.md) | [简体中文](README_cn.md)
 
-*持模心，施**模法**，展模力。*
+## **1.1  框架核心手册**  
 
-*With MoXin in the heart, Play **MoFA** magic, Show Moly to the world.* 
+### **1.1.1 设计理念**
 
-<sub>注：Moxin 和 Moly 是MoFA的姊妹项目。</sub>
+MoFA是一个以组合的方式构建AI智能体的软件框架。使用MoFA，AI智能体可以通过模版方式构建，堆叠的方式组合，形成更强大的超级智能体（Super Agent)。
 
-## What
+MoFA 独特的设计类理念是：
 
-MoFA: **M**odular **F**ramework for **A**gent 
+- **平凡人做非凡事**：AI 不该是精英和巨头的专属领地。MoFA 让每个人都能驾驭和发展 AI，把不可能变成可能，让平凡人也能创造非凡。
+- **Composition AI**：受 Unix 哲学启发，MoFA 以“组合”作为核心原则。你可以像搭积木一样，构建智能体、连接智能体、集成工具，让 AI 变得简单、灵活、强大。
+- **Everything Agent**：与绝大多数软件不同，在 MoFA 的世界里，智能体（Agent）就是 AI 时代的应用（Application）。不仅是大语言模型，它可以是代码、脚本、API，甚至是 MoFA 本身。MoFA 不是一个框架，而是一个 Agent 生态。
+- **Data Flow**：大多数智能体框架依赖复杂的工作流（WorkFlow），而 MoFA 选择更直观、更强大的数据流（Data Flow）。这种方式让智能体能自由组合、拆解和重用，
 
-MoFA是一个以组合（Composition)的方式构建AI智能体的软件框架。使用MoFA，AI智能体可以通过模版方式构建，堆叠的方式组合，形成更强大的超级智能体（Super Agent)。
+### **1.1.2 技术架构图**
 
-## WHY
+<img src="https://github.com/RelevantStudy/mofasearch/blob/main/hackathons/docs/images/image-20250310010710778.png" alt="image-20250310010710778" style="zoom:67%;" />
 
-用MoFa构建智能体：
+# 2. **快速上手指南**
 
-1. 模块化（Modularity）：模块化的智能体模版，模块化的智能体服务，简单的模块配置，简单的模块间接口。
-2. 更清晰（Clarity）：“乐高积木”式的组合逻辑搭建复杂系统。
-3. 可组合（Composition）：智能体连接服务以获得更强的能力，智能体连接智能体以获得更多的功能。
-4. 更简单（Simplicity）：复杂智能体的构建是将各模块进行组合的零代码过程。
-5. 更快（High Performance）：智能体数据流运行在DORA-RS高性能低延迟的分布式AI和机器人计算环境，性能远超基于Python的计算环境。
-6. 更多样化（Diversity）：MoFa的智能体组合将成员将智能体能力有机地结合在一起，形成功能更加强大和完善的组合智能体。
-7. 迈向AI操作系统（Towards AIOS）：参照Unix Philosophy和设计方法设计：大语言模型推理提供“AIOS”的核心算力，Dora-RS和XMind Executor提供“AIOS”底层多进程计算调度和环境，而MoFa则是
-   - “AIOS”的Kernal Services，为智能体提供任务规划，记忆，行动和RAG等服务， 
-   - “AIOS”的Utility and Applications：实现常用功能、基础功能的Agents和它们的模版，和
-   - “AIOS”的Shell：运行智能体（即AI智能体）和通过PIPELINE等方式连接和组合智能体并使其自动化运行的环境。
-8. 使能边缘AI（Enable Edge AI）：执模心（MoXin开源项目)、施模法（MoFa项目，即本项目）、展模力（MoLy项目）。与提供本地开源大模型推理能力的MoXin项目和大语言模型和智能体用户界面的MoLy项目一起，部署在本地MoFa智能体让AI的应用变得更加开放和民主化。
+## **2.1 开发环境准备**
 
-## Features
+### 2.1.1 Python 环境
 
-#### 模法1: AI智能体可嵌套的设计模式（The Nesting Design Patterns of AI Agents） 
+```bash
+# 安装 UV 包管理器 加快mofa安装
+pip install uv
+```
 
-AI智能体就是有智能特点的计算机软件。随着大语言模型和应用的迅速发展，如面向对象编程有多种设计模式一般，基于LLM的AI智能体的设计也有多种模式。常用的模式包括但不限于：
+### **注意**: 
+- 本地python环境要纯净，不要多个python版本，否则容易导致Dora-rs运行环境和Mofa安装环境的冲突。
+- 如果你的环境使用的是Anaconda / Miniconda，务必将Mofa安装到`Base`环境下，以保证Dora运行环境和Mofa环境的一致。
+- 要求python环境 >= 3.10。
+- 我们目前已在 WSL（Ubuntu 22.04）和 macOS 上进行了测试。Windows 目前不支持。
+### 2.1.2 Rust 环境
+```bash
+# 安装 Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-- 大语言模型推理模式(LLM Inference)：大语言模型本身就是最简单的智能体，根据用户的提示，LLM就可以通过推理给出智能化的响应。
-- 提示定制模式（Customized Prompt）：通过对大语言模型的系统提示进行定制化所形成的智能体。
+# 安装 Dora 运行时
+cargo install dora-cli
 
-- 反思模式（Reflection）： 让Agent 能够审视和修正自己的输出的模式。
-- 工具使用模式(Actor)：这种模式赋予 Agent 使用外部工具和资源的能力,如生成代码、调用 API、搜索网页等。
-- ReAct模式：由反思和工具使用交替进行从而改进输出质量的模式。
-- 多智能体协作模式：这种模式涉及多个 Agent 扮演不同的专家角色,协同完成任务。通过团队合作,多个 Agent 可以共同解决复杂问题。
+# 验证安装
+rustc --version
+cargo --version
+dora --version
+```
 
-一般而言，复杂的智能体设计模式可以通过嵌套在比较简单的设计模式的智能体上构成。所以，在MoFa中，我们提供了一些实现基础的（简单的）智能体设计模式的智能体模版。使用这些模版，应用开发者能够构建原子智能体，并与其它的智能体进行组合，形成功能完善，符合复杂需求的超级智能体。
+## 2.2 安装 MoFa
 
-#### 模法2：智能体核心服务 Agent Kernal Services
+### 2.2.1 Git Clone 方式
+```bash
+# 克隆仓库
+git clone https://github.com/moxin-org/mofa.git
+cd mofa/python
 
-有如一个传统计算机操作系统为传统软件应用提供系统服务，MoFa为AI智能体提供智能体核心服务，包括记忆和存储(Memory), 任务规划(Planning)，知识库和RAG以及行动（Action）等。因此，根据用户不同的需求，这些核心服务可以一击提供给任何一个用户Agent。
+# 安装依赖
+uv pip install -e . && pip install -e . 
+# 其中uv 可以加速安装依赖，而pip install -e . 会将py文件编译为.pyc文件，并且会将mofa安装到当前的python环境中
+```
 
-#### 模法3: 智能体组合（Composition）
+### 2.2.2 Docker 方式
+```bash
+# 进入docker目录
+cd /mofa/python/docker
+# 构建镜像
+docker build -t mofa -f Dockerfile_x86 .
 
-组合是将各元素拼接形成新事物的方法和过程，在组合的过程中，不涉及元素的实际结合或变化。组合是松耦合的，具有可逆行和可叠加的特性，比如乐高玩具，可以将形状不同的乐高积木通过组合的方式构建成各式各样的物体。这些物体还可以通过进一步的组合形成更加复杂的物体。组合的物体也可以通过拆解的过程，还原成各元素。
+# 运行容器
+docker run -it --rm mofa
 
-为了更好地理解组合，我们还可以对比一下事物形成的方法，比如：
+# 在容器内验证安装
+mofa --help 
+```
 
-复合（Compound)：化合是多种元素发生了变化和进行了实际的结合，形成一种新的物质的方法和过程。过程中，元素发生了变化，紧密耦合的（我中有你，你中有我），复合过程不具备可逆性和可叠加性。比如蛋糕烘焙，面粉、糖、奶油，鸡蛋等元素，经过一个烘焙的复合过程成为蛋糕。而用几个小蛋糕烘焙成更大蛋糕或将蛋糕中的糖，鸡蛋等元素分解还原出来，是非常困难的。
-
-混合（Mix)：混合是将多种元素通过物理方式放在一起。虽然混合的过程也存在可逆性和可叠加性，但这种方法，各元素之间并没有发生联系，并没有产生新的事物，而是形成了元素的集合。比如：将苹果和橙子放到了一起，我们得到的是苹果和橙子的集合。
-
-通过MoFA，基于组合的方法和过程，AI应用开发者可以构建AI智能体，也可以将现有的智能体进行创造性的组合，从而形成具有新功能或更加强大的智能体。因为MoFA，智能体的开发变得过程简单，模块化，逻辑清晰，可扩展，可重用。
-
-#### 模法4: 数据流驱动（Dataflow Driven）
-
-与基于工作流(Workflow)的方法不同，MoFA选择基于数据流（Dataflow)的方法。工作流的方法的重心在于对任务的流程和各操作步骤之间业务规则的抽象，而数据流的方法主要是确定任务之间的数据依赖性就可以了。
-
-在各成员智能体之间搭建数据流是MoFA中组合的核心方法。MoFA并不特别关心复杂的业务规则和流程的编排。基本的业务规则在原子智能体模版里就获得了实现，而更复杂的业务规则是成员智能体内部维护，并不暴露在节点和节点之间的流程配置中。流程的编排并不强调管理业务之间顺序，而是数据流动的顺序。正是由于简单和不具“侵入”性的数据流驱动，保障了组合的可叠加和可逆性。在构建复杂应用的过程中，更具备可管理和可调试性。
-
-在MoFA提供的智能体模版上定制用户智能体，一键获取任务规划、知识库、记忆和行动等核心能力，通过数据流将多个用数据流组合在一起提供更强大的功能。
-
-## How
-
-MoFA目前支持基于Dora-RS的智能体开发模式。
-
-- 基于Dora-RS的开发模式，详见[python](python)目录[README.md](python/README.md)
-
+## **2.3 运行第一个Hello World**
 
 
-## GOSIM China 2024 Super Agent Hackathon
+### 2.3.1 启动数据流
+```bash
+cd  /mofa/python/examples/hello_world
 
-MoFA项目是GOSIM 2024中国大会Super Agent黑客马拉松大赛的编程框架之一。
+# 启动 Dora 服务
+dora up
 
-- 为参赛选手准备的文档在[这里>>>](Gosim_2024_Hackathon/documents/README.md).
+# 构建并运行数据流
+dora build hello_world_dataflow.yml
+dora start hello_world_dataflow.yml
+```
 
-- 比赛的情况和结果在[这里>>>](https://gosim.gitcode.com/hackathon/)
-- 用MoFA编织你的人工智能应用程序，GOSIM China 2024 [YouTube](https://www.youtube.com/watch?v=FhL3orAVO6U)
+### 2.3.2 测试交互
+```bash
+# 在另一个终端运行输入节点
+terminal-input
+
+# 输入测试数据
+> hello
+# 预期输出: hello
+```
+
+交互结果示例：
+
+```
+root@root hello_world % terminal-input                                           
+ Send You Task :  你好
+-------------hello_world_result---------------    
+你好 
+---------------------------------------  
+ Send You Task :  你是谁   
+-------------hello_world_result---------------    
+你是谁    
+---------------------------------------
+```
+
+## **2.4 5分钟开发第一个应用**
+
+
+本指南将帮助你快速创建一个基于大语言模型的Agent，遵循hello-world的简单实现方式。
+
+### 2.4.1. 创建Agent项目 (1分钟)
+
+使用 MoFa CLI 创建新的 Agent：
+```bash
+# 创建新的 Agent 项目
+mofa new-agent my-llm-agent
+cd my-llm-agent
+```
+
+### 2.4.2. 配置环境变量 (1分钟)
+
+创建 `.env.secret` 文件(在Dataflow.yml目录同级进行创建)：
+```plaintext
+LLM_API_KEY=your_api_key_here
+LLM_API_BASE=https://api.openai.com/v1  # 或其他API地址
+LLM_MODEL=gpt-3.5-turbo  # 或其他模型名称
+```
+
+### 2.4.3. 实现Agent逻辑 (2分钟)
+
+编辑 `my_llm_agent/main.py`：
+```python
+from mofa.agent_build.base.base_agent import MofaAgent, run_agent
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+@run_agent
+def run(agent: MofaAgent):
+    try:
+        # 加载环境变量
+        load_dotenv('.env.secret')
+        
+        # 初始化 OpenAI 客户端
+        client = OpenAI(
+            api_key=os.getenv('LLM_API_KEY'),
+            base_url=os.getenv('LLM_API_BASE')
+        )
+        
+        # 接收用户输入
+        user_input = agent.receive_parameter('query')
+        
+        # 调用 LLM
+        response = client.chat.completions.create(
+            model=os.getenv('LLM_MODEL', 'gpt-3.5-turbo'),
+            messages=[
+                {"role": "system", "content": "You are a helpful AI assistant."},
+                {"role": "user", "content": user_input}
+            ],
+            stream=False
+        )
+        
+        # 发送输出
+        agent.send_output(
+            agent_output_name='llm_result',
+            agent_result=response.choices[0].message.content
+        )
+        
+    except Exception as e:
+        agent.logger.error(f"Error: {str(e)}")
+        agent.send_output(
+            agent_output_name='llm_result',
+            agent_result=f"Error: {str(e)}"
+        )
+
+def main():
+    agent = MofaAgent(agent_name='my-llm-agent')
+    run(agent=agent)
+
+if __name__ == "__main__":
+    main()
+```
+
+### 2.4.4. 创建数据流配置 (1分钟)
+
+创建 `my_llm_dataflow.yml`：
+```yaml
+nodes:
+  - id: terminal-input
+    build: pip install -e ../../node-hub/terminal-input
+    path: dynamic
+    outputs: data
+    inputs:
+      agent_response: my-llm-agent/llm_result
+
+  - id: my-llm-agent
+    build: pip install -e . ../../agent-hub/my-llm-agent
+    path: my-llm-agent
+    outputs: llm_result
+    inputs:
+      query: terminal-input/data
+    env:
+      IS_DATAFLOW_END: true
+      WRITE_LOG: true
+```
+**提示**:
+- 切记案例不要和dataflow放到同一个文件夹下,一定保持在不同的文件夹中
+- 
+### 2.4.5. 运行和测试
+
+```bash
+# 启动数据流
+dora up
+dora build my_llm_dataflow.yml
+dora start my_llm_dataflow.yml
+
+# 新开终端测试
+terminal-input
+> 你好，请介绍一下自己
+```
+
+### 2.4.6.代码说明
+
+1. **使用装饰器**
+   - 使用 `@run_agent` 装饰器简化代码结构
+   - 自动处理循环和异常
+
+2. **简单的输入输出**
+   - 接收单个输入参数 `query`
+   - 返回单个输出结果 `llm_result`
+
+3. **错误处理**
+   - 使用 try-except 捕获异常
+   - 记录错误日志
+   - 返回错误信息给用户
+
+### 2.4.7.自定义选项
+
+1. **修改系统提示词**
+```python
+messages=[
+    {"role": "system", "content": "你的自定义系统提示词"},
+    {"role": "user", "content": user_input}
+]
+```
+
+2. **更换LLM提供商**
+   - 修改 `.env.secret` 中的 API 配置
+   - 根据需要调整模型参数
+
+### 2.4.8.注意事项
+
+1. 确保 `.env.secret` 已添加到 `.gitignore`
+2. API密钥要妥善保管
+3. 保持代码结构简单清晰
+
+## **2.5 Dataflow 详解**
+
+(以hello-world为例)
+
+### 2.5.1. 数据流流程
+```mermaid
+flowchart LR
+    terminal-input -->|data| hello-world-agent
+    hello-world-agent -->|hello_world_result| terminal-input
+```
+
+数据流包含两个节点：
+1. **terminal-input**: 终端输入节点，负责接收用户输入
+2. **hello-world-agent**: 智能体节点，负责处理输入并返回结果
+
+### 2.5.2. 节点特性
+每个节点都是多输入多输出的，并且支持持续流式处理：
+- **输入输出持续流动**：类似于 OpenAI 的 stream 模式
+- **动态处理**：输入输出通过代码动态控制
+- **双向通信**：节点之间可以互相发送消息
+
+### 2.5.3. 关键配置说明
+
+#### 2.5.3.1 IS_DATAFLOW_END
+```yaml
+env:
+  IS_DATAFLOW_END: true
+```
+- 标记当前节点是否为数据流的最后一个节点
+- 当该节点发送消息时，表示整个流程结束
+- 流程结束后会自动从头开始新的处理循环
+
+#### 2.5.3.2 WRITE_LOG
+```yaml
+env:
+  WRITE_LOG: true
+```
+- 启用日志记录功能
+- 记录当前节点的所有输入输出
+- 日志保存在 `logs/` 目录下
+- 日志格式：
+  ```log
+  2025-03-06 11:31:14,172 - INFO: "hello-world receive data: hello"
+  2025-03-06 11:31:14,173 - INFO: "output name: hello_world_result output data: hello"
+  ```
+
+### 2.5.4. 数据流示例
+```yaml
+nodes:
+  - id: terminal-input
+    build: pip install -e ../../node-hub/terminal-input
+    path: dynamic
+    outputs: data
+    inputs:
+      agent_response: hello-world-agent/hello_world_result
+
+  - id: hello-world-agent
+    build: pip install -e ../../agent-hub/hello-world
+    path: hello-world
+    outputs: hello_world_result
+    inputs:
+      query: terminal-input/data
+    env:
+      IS_DATAFLOW_END: true
+      WRITE_LOG: true
+```
+
+### 2.5.5. 处理流程详解
+1. 用户通过 terminal-input 输入数据
+2. terminal-input 将数据发送给 hello-world-agent
+3. hello-world-agent 处理数据并返回结果
+4. 结果返回给 terminal-input 显示
+5. 由于 IS_DATAFLOW_END=true，流程结束并重新开始
+
+### 2.5.6. 日志文件位置
+- `logs/log_hello-world-agent.txt`: 智能体运行日志
+- `logs/dora-coordinator.txt`: 协调器日志
+- `logs/dora-daemon.txt`: 守护进程日志
+
+### 2.5.7. 最佳实践
+1. 使用 WRITE_LOG 调试数据流
+2. 合理设置 IS_DATAFLOW_END 控制流程结束
+3. 保持输入输出参数类型一致
+4. 使用环境变量控制调试模式
+5. 定期清理 logs/ 目录中的旧日志
+
+# **3. 高级开发手册**
+
+## 3.1 **构建自定义 Agent**
+
+
+### 3.1.1 使用模板创建
+```bash
+mofa new-agent you_agent_name 
+```
+**提示**:
+- 你可以使用 `mofa new-agent --help` 来查看创建Agent的相关信息
+
+
+### 3.1.2 项目结构
+```
+my-new-agent/
+├── agent/
+│   ├── configs/
+│   │   └── agent.yml       # 配置文件
+│   ├── main.py             # 主程序
+│   └── __init__.py
+├── tests/
+│   └── test_main.py        # 测试代码
+├── pyproject.toml          # 依赖配置
+└── README.md               # 项目文档
+```
+
+### 3.1.3 核心代码示例
+```python
+from mofa.agent_build.base.base_agent import MofaAgent, run_agent
+
+@run_agent
+def run(agent: MofaAgent):
+    try:
+        # 接收单个agent输入
+        task = agent.receive_parameter('task')
+        
+        # 接收多个agent输入
+        receive_datas = agent.receive_parameter(['example_one','example_two'])
+        # 结果类似于 {'example_one':'example_one_data','example_two':'example_two_data'}
+
+        # 处理逻辑 你可以把你的逻辑添加到这里
+        result = process_task(task)
+        
+        # 发送输出 确保你的输出是可以被序列化的对象(字符串等)
+        agent.send_output(
+            agent_output_name='agent_result',
+            agent_result=result
+        )
+        
+    except Exception as e:
+        agent.logger.error(f"Error: {str(e)}")
+        
+
+def process_task(data: str) -> str:
+    """示例处理函数"""
+    return f"Processed: {data}"
+
+def main():
+    agent = MofaAgent(agent_name='my-new-agent')
+    run(agent=agent)
+
+if __name__ == "__main__":
+    main()
+```
+
+
