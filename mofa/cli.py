@@ -3,7 +3,7 @@ import shutil
 import time
 import uuid
 import subprocess
-from mofa import agent_dir_path
+from mofa import agent_dir_path, cli_dir_path
 
 import click
 import sys
@@ -125,7 +125,7 @@ def new_agent(agent_name: str, version: str, output: str, authors: str):
 
     # Define the template directory
     # template_dir = os.path.join(os.path.dirname(agent_dir_path), 'agent-hub', 'agent-template')
-    template_dir = os.path.join(agent_dir_path,'agent-template')
+    template_dir = os.path.join(cli_dir_path,'agent-template')
 
     # Ensure the template directory exists and contains cookiecutter.json
     if not os.path.exists(template_dir):
