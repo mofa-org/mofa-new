@@ -11,7 +11,6 @@ import logging
 
 from mcp.server import FastMCP
 
-from mofa.kernel.utils.util import create_agent_output, load_node_result
 from mofa.utils.files.read import read_yaml
 import yaml
 from dora import Node
@@ -20,7 +19,13 @@ from pathlib import Path
 from mofa.utils.files.write import ensure_directory_exists
 from logging.handlers import RotatingFileHandler
 
-
+def create_agent_output(agent_name:str, agent_result:Union[str,dict,list], dataflow_status:bool=os.getenv(
+                                                                                    "IS_DATAFLOW_END",                                                              True)):
+    if isinstance(agent_result, dict) or isinstance(agent_result, list):
+        agent_result = json.dumps(agent_result, ensure_ascii=False)
+    return json.dumps({'step_name':agent_name, 'node_results':agent_result, 'dataflow_status':dataflow_status}, ensure_ascii=False)
+def load_node_result(node_data):
+    return json.loads(node_data).get('node_results')
 @define
 class MofaLogger:
     agent_name: str

@@ -40,7 +40,7 @@ setup(
     package_dir={'mofa': 'mofa'},
     test_suite='tests',
     tests_require=test_requirements,
-    version='0.2.6',
+    version='0.2.7',
     zip_safe=False,
     dependency_links=[]
 )

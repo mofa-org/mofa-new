@@ -34,6 +34,11 @@ RUN cargo install dora-cli --locked && \
 #    pip install --upgrade --ignore-installed blinker && \
 #    pip3 install uv && uv pip install --system -e . &&  pip3 install -e .
 
+RUN mkdir -p /project && \
+    cd /project && \
+    pip3 install --upgrade pip --index-url https://pypi.org/simple && \
+    pip install --upgrade --ignore-installed blinker && \
+    pip3 install uv && uv pip install --system mofa-ai
 
 WORKDIR /project
 
