@@ -24,12 +24,7 @@ The unique design philosophy of MoFA is:
 
 ## **2.1 Development Environment Setup**
 
-### 2.1.1 Python Environment
 
-```bash
-# Install the UV package manager to speed up MoFA installation
-pip install uv
-```
 
 ### **Note**:
 - Ensure that the Python environment is clean, with no multiple Python versions, to avoid conflicts between the Dora-rs runtime and MoFA installation.
@@ -53,23 +48,17 @@ dora --version
 
 ## 2.2 Install MoFA
 
-### 2.2.1 Git Clone Method
+### 2.2.1 Pypi Install Mofa
 
 ```bash
-# Clone the repository
-git clone https://github.com/moxin-org/mofa.git
-cd mofa/python
-
-# Install dependencies
-uv pip install -e . && pip install -e . 
-# uv speeds up dependency installation, and pip install -e . will compile the Python files into .pyc files and install MoFA into the current Python environment
+pip install mofa-ai
 ```
 
 ### 2.2.2 Docker Method
 
 ```bash
 # Go to the docker directory
-cd /mofa/python/docker
+cd docker
 # Build the image
 docker build -t mofa -f Dockerfile_x86 .
 
@@ -85,7 +74,7 @@ mofa --help
 ### 2.3.1 Start the Data Flow
 
 ```bash
-cd  /mofa/python/examples/hello_world
+cd examples/hello_world
 
 # Start the Dora service
 dora up
@@ -433,6 +422,4 @@ if __name__ == "__main__":
     main()
 ```
 
----
 
-This translation should capture all the necessary details and terminology in English. Let me know if you'd like further adjustments!
