@@ -30,7 +30,7 @@ pathlib
 
 
 # --------- ai-tools --------- #
-
+mem0ai
 openai==1.65.4
 instructor
 
@@ -57,8 +57,12 @@ toml
 # --------- mcp server --------- #
 mcp
 
+# --------- db --------- #
+chromadb
+
 # --------- distributed --------- #
 dora-rs-cli
+
 
 
 
