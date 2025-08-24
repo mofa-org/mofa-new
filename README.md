@@ -320,14 +320,16 @@ nodes:
   - id: terminal-input
     build: pip install -e ../../node-hub/terminal-input
     path: dynamic
-    outputs: data
+    outputs: 
+      - data
     inputs:
       agent_response: hello-world-agent/hello_world_result
 
   - id: hello-world-agent
     build: pip install -e ../../agent-hub/hello-world
     path: hello-world
-    outputs: hello_world_result
+    outputs: 
+      - hello_world_result
     inputs:
       query: terminal-input/data
     env:
