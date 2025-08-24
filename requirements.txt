@@ -56,6 +56,8 @@ toml
 
 # --------- mcp server --------- #
 mcp
+fastapi
+fastmcp
 
 # --------- db --------- #
 chromadb
