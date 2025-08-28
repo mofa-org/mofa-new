@@ -140,7 +140,7 @@ LLM_MODEL=gpt-3.5-turbo  # 或其他模型名称
 
 ### 2.4.3. 实现Agent逻辑 (2分钟)
 
-编辑 `my_llm_agent/main.py`：
+编辑 [mofa_home]/agent-hub/my-llm-agent/my_llm_agent/main.py：
 ```python
 from mofa.agent_build.base.base_agent import MofaAgent, run_agent
 from openai import OpenAI
@@ -195,20 +195,22 @@ if __name__ == "__main__":
 
 ### 2.4.4. 创建数据流配置 (1分钟)
 
-创建 `my_llm_dataflow.yml`：
+创建 my_llm_dataflow.yml：（在.env.secret 文件所在目录同级进行创建）
 ```yaml
 nodes:
   - id: terminal-input
     build: pip install -e ../../node-hub/terminal-input
     path: dynamic
-    outputs: data
+    outputs:
+      - data
     inputs:
       agent_response: my-llm-agent/llm_result
 
   - id: my-llm-agent
-    build: pip install -e . ../../agent-hub/my-llm-agent
+    build: pip install -e ../../agent-hub/my-llm-agent
     path: my-llm-agent
-    outputs: llm_result
+    outputs:
+      - llm_result
     inputs:
       query: terminal-input/data
     env:
