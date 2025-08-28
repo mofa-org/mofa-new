@@ -127,6 +127,8 @@ mofa new-agent my-llm-agent
 cd my-llm-agent
 ```
 
+建议在[MOFA_HOME]的agent-hub子目录下创建新的Agent。
+
 ### 2.4.2. 配置环境变量 (1分钟)
 
 创建 `.env.secret` 文件(在Dataflow.yml目录同级进行创建)：
