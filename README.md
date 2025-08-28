@@ -29,7 +29,7 @@ The unique design philosophy of MoFA is:
 ### **Note**:
 - Ensure that the Python environment is clean, with no multiple Python versions, to avoid conflicts between the Dora-rs runtime and MoFA installation.
 - If you are using Anaconda / Miniconda, make sure to install MoFA in the `Base` environment to maintain consistency between the Dora runtime and MoFA environment.
-- Python version >= 3.10 is required.
+- Python version 3.10 or 3.11 is required，don't try higher version yet. 
 - We have currently tested on WSL (Ubuntu 22.04) and macOS. Windows is not supported at this time
 ### 2.1.2 Rust Environment
 
@@ -123,9 +123,11 @@ mofa new-agent my-llm-agent
 cd my-llm-agent
 ```
 
+It is suggested to create new agent under the [mofa_home]/agent-hub. 
+
 ### 2.4.2. Configure Environment Variables (1 minute)
 
-Create the `.env.secret` file (create it at the same level as the Dataflow.yml directory):
+Create the `.env.secret` file (create it at the same level as the Dataflow.yml directory, eg. under the [mofa_home]/examples folder, create the project folder，and then create the `.env.secret` file):
 
 ```plaintext
 LLM_API_KEY=your_api_key_here
@@ -135,7 +137,7 @@ LLM_MODEL=gpt-3.5-turbo  # or another model name
 
 ### 2.4.3. Implement the Agent Logic (2 minutes)
 
-Edit `my_llm_agent/main.py`:
+Edit `[mofa_home]/agent-hub/my-llm-agent/my_llm_agent/main.py`:
 
 ```python
 from mofa.agent_build.base.base_agent import MofaAgent, run_agent
@@ -191,7 +193,7 @@ if __name__ == "__main__":
 
 ### 2.4.4. Create Data Flow Configuration (1 minute)
 
-Create `my_llm_dataflow.yml`:
+Create `my_llm_dataflow.yml`, within the folder in which .env.secret is at）:
 
 ```yaml
 nodes:
