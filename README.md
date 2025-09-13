@@ -427,3 +427,6 @@ if __name__ == "__main__":
 ```
 
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=mofa-org/mofa&type=Date)](https://www.star-history.com/#mofa-org/mofa&Date)
