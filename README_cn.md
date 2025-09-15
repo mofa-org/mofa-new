@@ -25,22 +25,39 @@ MoFA 独特的设计类理念是：
 
 ### 2.1.1 Python 环境
 
+首先我们需要创造一个纯净的python环境，这也决定了之后的包安装方式。
+
+这里我们有两种方法供大家选择。
+
+1. **venv+pip**
 ```bash
-# 安装 UV 包管理器 加快mofa安装
+# 创建venv
+python3 -m venv .mofa
+# 激活venv
+source .mofa/bin/activate
+```
+2. **uv**
+```bash
+# 安装 UV 包管理器 
 pip install uv
+# 在当前目录创建虚拟环境
+uv venv .mofa 
+# 激活环境
+source .mofa/bin/activate  
 ```
 
 ### **注意**: 
-- 本地python环境要纯净，不要多个python版本，否则容易导致Dora-rs运行环境和Mofa安装环境的冲突。
+- 如果不建立虚拟环境，本地python环境一定要纯净，不要存在多个python版本，否则容易导致Dora-rs运行环境和Mofa安装环境的冲突。
 - 如果你的环境使用的是Anaconda / Miniconda，务必将Mofa安装到`Base`环境下，以保证Dora运行环境和Mofa环境的一致。
 - 要求python环境为3.10或3.11。
 - 我们目前已在 WSL（Ubuntu 22.04）和 macOS 上进行了测试。Windows 目前不支持。
+
 ### 2.1.2 Rust 环境
 ```bash
 # 安装 Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# 安装 Dora 运行时
+# 出现选择后，选择1或直接按enter
+# 安装 Dora 运行时 这句啥意思
 cargo install dora-cli
 
 # 验证安装
@@ -54,22 +71,15 @@ dora --version
 ### 2.2.1 Git Clone 方式
 ```bash
 # 克隆仓库
+# 如果你在2.1.1选择了venv+pip
+pip install mofa-ai
+#验证安装
+pip show mofa-ai
 
-pip install uv && uv pip install -e mofa-ai  
-```
-
-### 2.2.2 Docker 方式
-```bash
-# 进入docker目录
-cd /mofa/python/docker
-# 构建镜像
-docker build -t mofa -f Dockerfile_x86 .
-
-# 运行容器
-docker run -it --rm mofa
-
-# 在容器内验证安装
-mofa --help 
+# 如果你在2.1.1选择了UV
+uv pip install mofa-ai  
+#验证安装
+uv pip show mofa-ai
 ```
 
 ## **2.3 运行第一个Hello World**
