@@ -27,28 +27,16 @@ MoFA 独特的设计类理念是：
 
 首先我们需要创造一个纯净的python环境，这也决定了之后的包安装方式。
 
-这里我们有两种方法供大家选择。
-
-1. **venv+pip**
 ```bash
 # 创建venv
 python3 -m venv .mofa
 # 激活venv
 source .mofa/bin/activate
 ```
-2. **uv**
-```bash
-# 安装 UV 包管理器 
-pip install uv
-# 在当前目录创建虚拟环境
-uv venv .mofa 
-# 激活环境
-source .mofa/bin/activate  
-```
 
 ### **注意**: 
 - 如果不建立虚拟环境，本地python环境一定要纯净，不要存在多个python版本，否则容易导致Dora-rs运行环境和Mofa安装环境的冲突。
-- 如果你的环境使用的是Anaconda / Miniconda，务必将Mofa安装到`Base`环境下，以保证Dora运行环境和Mofa环境的一致。
+- 请不要使用Anaconda，默认的conda库里没有mofa-ai
 - 要求python环境为3.10或3.11。
 - 我们目前已在 WSL（Ubuntu 22.04）和 macOS 上进行了测试。Windows 目前不支持。
 
@@ -57,7 +45,7 @@ source .mofa/bin/activate
 # 安装 Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # 出现选择后，选择1或直接按enter
-# 安装 Dora 运行时 这句啥意思
+# 安装 Dora 命令行工具
 cargo install dora-cli
 
 # 验证安装
@@ -68,19 +56,12 @@ dora --version
 
 ## 2.2 安装 MoFa
 
-### 2.2.1 Git Clone 方式
 ```bash
 # 克隆仓库
 # 如果你在2.1.1选择了venv+pip
 pip install mofa-ai
 #验证安装
 pip show mofa-ai
-
-# 如果你在2.1.1选择了UV
-uv pip install mofa-ai  
-#验证安装
-uv pip show mofa-ai
-```
 
 ## **2.3 运行第一个Hello World**
 ```bash
@@ -89,7 +70,7 @@ git clone git@github.com:mofa-org/AIOS.git
 
 ### 2.3.1 启动数据流
 ```bash
-cd  AIOS/examples/hello_world
+cd  AIOS/examples/hello-world
 
 # 启动 Dora 服务
 dora up
@@ -101,8 +82,28 @@ dora start hello_world_dataflow.yml
 
 ### 2.3.2 测试交互
 ```bash
+# 打开一个新终端
+# 同样进入创建的虚拟环境
+source .mofa/bin/activate
+
 # 在另一个终端运行输入节点
 terminal-input
+# 如果出现
+ModuleNotFoundError: No module named 'dora'
+#请执行这两句命令
+which pip
+which python
+# 请检查pip和python的路径是否一致，都来自创建的虚拟环境，一般为/root/你的文件夹/.mofa/bin/python
+
+# 如果出现这个问题
+RuntimeError: Could not setup node from node id. Make sure to have a running dataflow with this dynamic node
+
+Caused by:
+    failed to get node config from daemon: multiple dataflows contain dynamic node id terminal-input. Please only have one running dataflow with the specified node id if you want to use dynamic node
+# 是因为有多个dora进程在运行
+pkill dora
+# 然后重新从启动Dora服务开始运行
+
 
 # 输入测试数据
 > hello
