@@ -25,7 +25,7 @@ MoFA 独特的设计类理念是：
 
 ### 2.1.1 Python 环境
 
-首先我们需要创造一个纯净的python环境，这也决定了之后的包安装方式。
+首先我们需要创造一个纯净的python环境。
 
 ```bash
 # 创建venv
@@ -44,7 +44,7 @@ source .mofa/bin/activate
 ```bash
 # 安装 Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-# 出现选择后，选择1或直接按enter
+# 出现选择后，直接按enter
 # 安装 Dora 命令行工具
 cargo install dora-cli
 
@@ -57,11 +57,11 @@ dora --version
 ## 2.2 安装 MoFa
 
 ```bash
-# 克隆仓库
-# 如果你在2.1.1选择了venv+pip
+# 克隆仓库,大约需要5mins
 pip install mofa-ai
-#验证安装
+# 验证安装
 pip show mofa-ai
+```
 
 ## **2.3 运行第一个Hello World**
 ```bash
@@ -88,6 +88,7 @@ source .mofa/bin/activate
 # 在另一个终端运行输入节点
 terminal-input
 
+
 # 如果出现
 ModuleNotFoundError: No module named 'dora'
 #请执行这两句命令
@@ -109,7 +110,6 @@ pkill dora
 > hello
 # 预期输出: hello
 ```
-
 交互结果示例：
 
 ```
@@ -122,6 +122,11 @@ root@root hello_world % terminal-input
 -------------hello_world_result---------------    
 你是谁    
 ---------------------------------------
+```
+
+```base
+# 为保证dora进程不残留影响使用
+dora destroy
 ```
 
 ## **2.4 5分钟开发第一个应用**
@@ -190,7 +195,7 @@ LLM_API_KEY=你的Qwen_API密钥
 # Qwen 模型名称（如 qwen-turbo、qwen-plus 等，根据需求选择）
 LLM_MODEL=qwen-turbo # 或其他模型名称
 # LLM_API_BASE 对于 Qwen 不是必需的，因为通过 dashscope 已指定服务端，若有特殊部署可按需配置
-# LLM_API_BASE=...
+LLM_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
 
 
@@ -208,47 +213,55 @@ cd my_llm_agent
 
 ```python
 # 以openai为例
-from mofa.agent_build.base.base_agent import MofaAgent, run_agent
-from openai import OpenAI
+
 import os
 from dotenv import load_dotenv
+from mofa.agent_build.base.base_agent import MofaAgent, run_agent
+
+
+def call_openai_directly(user_input: str) -> str:
+    import openai
+    client = openai.OpenAI(
+        api_key=os.getenv('LLM_API_KEY'),
+        base_url=os.getenv('LLM_API_BASE')
+    )
+
+    response = client.chat.completions.create(
+        model=os.getenv('LLM_MODEL', 'gpt-3.5-turbo'),
+        messages=[
+            {"role": "system", "content": "You are a helpful AI assistant."},
+            {"role": "user", "content": user_input}
+        ],
+        stream=False
+    )
+    return response.choices[0].message.content
+
 
 @run_agent
 def run(agent: MofaAgent):
     try:
-        # 加载环境变量
         load_dotenv('.env.secret')
-        
-        # 初始化 OpenAI 客户端
-        client = OpenAI(
-            api_key=os.getenv('LLM_API_KEY'),
-            base_url=os.getenv('LLM_API_BASE')
-        )
-        
-        # 接收用户输入
         user_input = agent.receive_parameter('query')
+        agent.write_log(message=f"Received input: {user_input}")
+
+        agent.write_log(message="Handing over to isolated OpenAI function...")
+        llm_result = call_openai_directly(user_input)
+        agent.write_log(message=f"Received result from isolated function: {llm_result}")
         
-        # 调用 LLM
-        response = client.chat.completions.create(
-            model=os.getenv('LLM_MODEL', 'gpt-3.5-turbo'),
-            messages=[
-                {"role": "system", "content": "You are a helpful AI assistant."},
-                {"role": "user", "content": user_input}
-            ],
-            stream=False
-        )
-        
-        # 发送输出
         agent.send_output(
             agent_output_name='llm_result',
-            agent_result=response.choices[0].message.content
+            agent_result=llm_result
         )
-        
     except Exception as e:
-        agent.logger.error(f"Error: {str(e)}")
+        error_message = f"An exception occurred: {str(e)}"
+        
+        # 使用 MofaAgent 正确的日志记录方法
+        agent.write_log(message=error_message, level='ERROR')
+        
+        # 同样将这个错误信息发送出去
         agent.send_output(
             agent_output_name='llm_result',
-            agent_result=f"Error: {str(e)}"
+            agent_result=error_message
         )
 
 def main():
@@ -260,50 +273,65 @@ if __name__ == "__main__":
 ```
 
 ```python
-# 以qwen为例
-from mofa.agent_build.base.base_agent import MofaAgent, run_agent
-from dashscope import Generation
+# main.py (Qwen 最终修正版)
+
 import os
 from dotenv import load_dotenv
+from mofa.agent_build.base.base_agent import MofaAgent, run_agent
 
-@run_agent
-def run(agent: MofaAgent):
+def call_qwen_directly(user_input: str) -> str:
+    """
+    通过在函数内部导入 dashscope，确保 API 调用不受框架启动时的任何影响。
+    """
     try:
-        # 加载环境变量
-        load_dotenv('.env.secret')
-        
-        # 接收用户输入
-        user_input = agent.receive_parameter('query')
-        
-        # 调用 Qwen 模型（使用 dashscope）
+        # 1. 在函数被调用的这一刻，才真正导入 dashscope 库
+        from dashscope import Generation
+
+        # 2. 调用 Qwen 模型
         response = Generation.call(
-            model=os.getenv('LLM_MODEL', 'qwen-turbo'),  # 指定 Qwen 模型，如 qwen-turbo、qwen-plus 等
-            api_key=os.getenv('LLM_API_KEY'),  # Qwen 的 API 密钥
+            model=os.getenv('LLM_MODEL', 'qwen-turbo'),   # 从环境变量读取模型名称
+            api_key=os.getenv('LLM_API_KEY'),            # 从环境变量读取 API Key
             messages=[
                 {"role": "user", "content": user_input}
             ]
         )
-        # 处理 Qwen 的响应，提取生成的内容
-        if response.status_code == 200:
-            llm_result = response.output.choices[0].message.content
-        else:
-            llm_result = f"Error: {response.message}"
         
-        # 发送输出
+        # 3. 处理响应
+        if response.status_code == 200:
+            return response.output.choices[0].message.content
+        else:
+            # 返回一个详细的错误信息，包括状态码、错误码和错误消息
+            return f"Qwen API Error: Status Code {response.status_code}, Code: {response.code}, Message: {response.message}"
+
+    except Exception as e:
+        return f"An exception occurred in call_qwen_directly: {str(e)}"
+
+
+@run_agent
+def run(agent: MofaAgent):
+    try:
+        load_dotenv('.env.secret')
+        user_input = agent.receive_parameter('query')
+        agent.write_log(message=f"Received input: {user_input}")
+
+        agent.write_log(message="Handing over to isolated Qwen function...")
+        llm_result = call_qwen_directly(user_input)
+        agent.write_log(message=f"Received result from isolated function: {llm_result}")
+        
         agent.send_output(
             agent_output_name='llm_result',
             agent_result=llm_result
         )
-        
     except Exception as e:
-        agent.logger.error(f"Error: {str(e)}")
+        error_message = f"An exception occurred in agent run loop: {str(e)}"
+        agent.write_log(message=error_message, level='ERROR')
         agent.send_output(
             agent_output_name='llm_result',
-            agent_result=f"Error: {str(e)}"
+            agent_result=error_message
         )
 
 def main():
-    agent = MofaAgent(agent_name='my_llm_agent')  # 可修改 Agent 名称，方便区分
+    agent = MofaAgent(agent_name='my_llm_agent') # agent 名称可以根据需要修改
     run(agent=agent)
 
 if __name__ == "__main__":
@@ -312,8 +340,38 @@ if __name__ == "__main__":
 
 在agent-hub的本例文件夹下修改pyproject.toml
 
-（本例文件路径为mofa/agent-hub/my_llm_agent/my_llm_agent/pyproject.toml）：
+（本例文件路径为mofa/agent-hub/my_llm_agent/pyproject.toml）：
+
+```base
+#openai
+[tool.poetry]
+name = "my_llm_agent"
+version = "0.1.0"
+authors = [
+    "daiyn2002@outlook.com",
+]
+description = "An OpenAI LLM agent for MoFA"
+license = "MIT"
+homepage = "https://github.com/your-org/my_llm_agent"
+readme = "README.md"
+packages = [{ include = "my_llm_agent" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+openai = "*"
+python-dotenv = "*"
+
+[tool.poetry.scripts]
+my_llm_agent = "my_llm_agent.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
 ```
+
+
+```base
+#qwen
 [tool.poetry]
 name = "my_llm_agent"
 version = "0.1.0"
@@ -346,7 +404,7 @@ build-backend = "poetry.core.masonry.api"
 ```yaml
 nodes:
   - id: terminal-input
-    build: pip install -e ../../node-hub/terminal-input
+    build: pip install ../../node-hub/terminal-input
     path: dynamic
     outputs:
       - data
@@ -354,7 +412,7 @@ nodes:
       agent_response: my_llm_agent/llm_result
 
   - id: my_llm_agent
-    build: pip install -e ../../agent-hub/my_llm_agent
+    build: pip install ../../agent-hub/my_llm_agent
     path: my_llm_agent
     outputs:
       - llm_result
@@ -380,6 +438,15 @@ dora start my_llm_dataflow.yml
 terminal-input
 > 你好，请介绍一下自己
 ```
+
+如果在build阶段出现
+ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory: '/root/mofa_last/.mofa_last/bin/terminal-input'
+可能是在依赖包安装的过程中出现了问题，请执行这条命令，进行强制重装
+pip install --force-reinstall --no-deps ../../node-hub/terminal-input
+如为ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory: '/root/mofa_last/.mofa_last/bin/my_llm_agent'
+请执行
+pip install --force-reinstall --no-deps ../../agent-hub/my_llm_agent
+然后重新build
 
 ### 2.4.6.代码说明
 
@@ -411,6 +478,8 @@ messages=[
    - 根据需要调整模型参数
 
 ### 2.4.8.注意事项
+dora destroy
+```
 
 1. 确保 `.env.secret` 已添加到 `.gitignore`
 2. API密钥要妥善保管
