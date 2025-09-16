@@ -65,13 +65,12 @@ pip show mofa-ai
 
 ## **2.3 运行第一个Hello World**
 ```bash
-git clone git@github.com:mofa-org/AIOS.git 
+git clone git@github.com:mofa-org/mofa.git
 ```
 
 ### 2.3.1 启动数据流
 ```bash
-cd  AIOS/examples/hello-world
-
+cd mofa/examples/hello_world
 # 启动 Dora 服务
 dora up
 
@@ -88,6 +87,7 @@ source .mofa/bin/activate
 
 # 在另一个终端运行输入节点
 terminal-input
+
 # 如果出现
 ModuleNotFoundError: No module named 'dora'
 #请执行这两句命令
