@@ -130,29 +130,84 @@ root@root hello_world % terminal-input
 本指南将帮助你快速创建一个基于大语言模型的Agent，遵循hello-world的简单实现方式。
 
 ### 2.4.1. 创建Agent项目 (1分钟)
-
-使用 MoFa CLI 创建新的 Agent：
-```bash
-# 创建新的 Agent 项目
-mofa new-agent my-llm-agent
-cd my-llm-agent
+可参考的文件架构配置
+```tree
+.
+└── mofa/
+    ├── .mofa/
+    │   ├── bin/
+    │   │   ├── python
+    │   │   └── pip
+    │   └── lib/
+    │       └── python3.10/
+    ├── examples/
+    │   ├── hello_world/
+    │   │   ├── README.md
+    │   │   ├── hello_world_dataflow-graph.html
+    │   │   ├── hello_world_dataflow.yml
+    │   │   ├── logs
+    │   │   └── out
+    │   └── my_llm_agent/
+    │       └── .env.secret
+    ├── node-hub/
+    │   └── terminal-input/
+    │       ├── terminal_input/
+    │       │   ├── __init__.py
+    │       │   └── main.py
+    │       ├── tests/
+    │       │   └── test.py
+    │       ├── README.md
+    │       └── pyproject.toml
+    ├── agent-hub/
+    │   ├── hello-world/
+    │   │   ├── hello_world/
+    │   │   │   ├── __init__.py
+    │   │   │   └── main.py
+    │   │   ├── tests/
+    │   │   │   └── test_main.py
+    │   │   ├── README.md
+    │   │   └── pyproject.toml
+    │   └── my_llm_agent/
+    └── README.md
 ```
-
-建议在[mofa_home]的agent-hub子目录下创建新的Agent。
 
 ### 2.4.2. 配置环境变量 (1分钟)
 
-创建 `.env.secret` 文件(在Dataflow.yml目录同级进行创建，例如在[mofa_home]/examples下创建项目目录，在该目录下创建。）：
+在example的本例文件夹下创建 `.env.secret` 文件
+（需在Dataflow.yml目录同级进行创建，本例中为mofa/examples/my_llm_agent）
+
+将以下内容写入`.env.secret`文件
+
+注意要将LLM_API_KEY\LLM_API_BASE\LLM_MODEL替换为你的模型信息
 ```plaintext
 LLM_API_KEY=your_api_key_here
 LLM_API_BASE=https://api.openai.com/v1  # 或其他API地址
 LLM_MODEL=gpt-3.5-turbo  # 或其他模型名称
 ```
+```plaintext
+# Qwen API 密钥（从通义千问平台获取）
+LLM_API_KEY=你的Qwen_API密钥
+# Qwen 模型名称（如 qwen-turbo、qwen-plus 等，根据需求选择）
+LLM_MODEL=qwen-turbo # 或其他模型名称
+# LLM_API_BASE 对于 Qwen 不是必需的，因为通过 dashscope 已指定服务端，若有特殊部署可按需配置
+# LLM_API_BASE=...
+```
 
+
+### 2.4.1. 创建Agent项目 (1分钟)
+使用 MoFa CLI 创建新的 Agent：
+```bash
+# 在agent_hub路径下创建新的 Agent 项目(本例中为mofa/agent_hub）
+mofa new-agent my_llm_agent
+cd my_llm_agent
+```
 ### 2.4.3. 实现Agent逻辑 (2分钟)
+在agent-hub的本例文件夹下创建main.py
 
-编辑 [mofa_home]/agent-hub/my-llm-agent/my_llm_agent/main.py：
+（本例文件路径为mofa/agent-hub/my_llm_agent/my_llm_agent/main.py）：
+
 ```python
+# 以openai为例
 from mofa.agent_build.base.base_agent import MofaAgent, run_agent
 from openai import OpenAI
 import os
@@ -197,16 +252,97 @@ def run(agent: MofaAgent):
         )
 
 def main():
-    agent = MofaAgent(agent_name='my-llm-agent')
+    agent = MofaAgent(agent_name='my_llm_agent')
     run(agent=agent)
 
 if __name__ == "__main__":
     main()
 ```
 
+```python
+# 以qwen为例
+from mofa.agent_build.base.base_agent import MofaAgent, run_agent
+from dashscope import Generation
+import os
+from dotenv import load_dotenv
+
+@run_agent
+def run(agent: MofaAgent):
+    try:
+        # 加载环境变量
+        load_dotenv('.env.secret')
+        
+        # 接收用户输入
+        user_input = agent.receive_parameter('query')
+        
+        # 调用 Qwen 模型（使用 dashscope）
+        response = Generation.call(
+            model=os.getenv('LLM_MODEL', 'qwen-turbo'),  # 指定 Qwen 模型，如 qwen-turbo、qwen-plus 等
+            api_key=os.getenv('LLM_API_KEY'),  # Qwen 的 API 密钥
+            messages=[
+                {"role": "user", "content": user_input}
+            ]
+        )
+        # 处理 Qwen 的响应，提取生成的内容
+        if response.status_code == 200:
+            llm_result = response.output.choices[0].message.content
+        else:
+            llm_result = f"Error: {response.message}"
+        
+        # 发送输出
+        agent.send_output(
+            agent_output_name='llm_result',
+            agent_result=llm_result
+        )
+        
+    except Exception as e:
+        agent.logger.error(f"Error: {str(e)}")
+        agent.send_output(
+            agent_output_name='llm_result',
+            agent_result=f"Error: {str(e)}"
+        )
+
+def main():
+    agent = MofaAgent(agent_name='my_llm_agent')  # 可修改 Agent 名称，方便区分
+    run(agent=agent)
+
+if __name__ == "__main__":
+    main()
+```
+
+在agent-hub的本例文件夹下修改pyproject.toml
+
+（本例文件路径为mofa/agent-hub/my_llm_agent/my_llm_agent/pyproject.toml）：
+```
+[tool.poetry]
+name = "my_llm_agent"
+version = "0.1.0"
+authors = [
+    "daiyn2002@outlook.com",
+]
+description = "A Qwen LLM agent for MoFA"
+license = "MIT"
+homepage = "https://github.com/your-org/my_llm_agent"
+readme = "README.md"
+packages = [{ include = "my_llm_agent" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+dashscope = "1.20.0"
+python-dotenv = "*"
+
+[tool.poetry.scripts]
+my_llm_agent = "my_llm_agent.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
+```
 ### 2.4.4. 创建数据流配置 (1分钟)
 
-创建 my_llm_dataflow.yml：（在.env.secret 文件所在目录同级进行创建）
+在example的本例文件夹下创建 my_llm_dataflow.yml
+
+（在.env.secret 文件所在目录同级进行创建，本例文件路径为mofa/examples/my_llm_agent/my_llm_dataflow.yml）
 ```yaml
 nodes:
   - id: terminal-input
@@ -215,11 +351,11 @@ nodes:
     outputs:
       - data
     inputs:
-      agent_response: my-llm-agent/llm_result
+      agent_response: my_llm_agent/llm_result
 
-  - id: my-llm-agent
-    build: pip install -e ../../agent-hub/my-llm-agent
-    path: my-llm-agent
+  - id: my_llm_agent
+    build: pip install -e ../../agent-hub/my_llm_agent
+    path: my_llm_agent
     outputs:
       - llm_result
     inputs:
@@ -228,10 +364,11 @@ nodes:
       IS_DATAFLOW_END: true
       WRITE_LOG: true
 ```
-**提示**:
-- 切记案例不要和dataflow放到同一个文件夹下,一定保持在不同的文件夹中
-- 
+
 ### 2.4.5. 运行和测试
+
+确保在example文件夹的本例路径下，然后执行下列命令
+（本例文件路径为mofa/examples/my_llm_agent）
 
 ```bash
 # 启动数据流
