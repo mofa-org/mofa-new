@@ -19,7 +19,7 @@ def send_task_and_receive_data(node):
     TIMEOUT = 300
     while True:
         data = input(
-            " Send You Task :  ",
+            " Send Your Task :  ",
         )
         node.send_output("data", pa.array([clean_string(data)]))
         event = node.next(timeout=TIMEOUT)

@@ -1,10 +1,11 @@
+#openai
 [tool.poetry]
 name = "my_llm_agent"
 version = "0.1.0"
 authors = [
     "daiyn2002@outlook.com",
 ]
-description = "A Qwen LLM agent for MoFA"
+description = "An OpenAI LLM agent for MoFA"
 license = "MIT"
 homepage = "https://github.com/your-org/my_llm_agent"
 readme = "README.md"
@@ -12,7 +13,7 @@ packages = [{ include = "my_llm_agent" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-dashscope = "1.20.0"
+openai = "*"
 python-dotenv = "*"
 
 [tool.poetry.scripts]
