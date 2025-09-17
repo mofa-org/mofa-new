@@ -17,7 +17,7 @@ MoFA 独特的设计类理念是：
 
 ### **1.1.2 技术架构图**
 
-<img src="https://github.com/RelevantStudy/mofasearch/blob/main/hackathons/docs/images/image-20250310010710778.png" alt="image-20250310010710778" style="zoom:67%;" />
+![组织架构图](Organizational_Chart_cn.png )  
 
 # 2. **快速上手指南**
 

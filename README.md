@@ -17,7 +17,7 @@ MoFA's unique design philosophies are:
 
 ### **1.1.2 Technical Architecture Diagram**
 
-<img src="https://github.com/RelevantStudy/mofasearch/blob/main/hackathons/docs/images/image-20250310010710778.png" alt="image-20250310010710778" style="zoom:67%;" />
+![组织架构图](Organizational_Chart.png )  
 
 # 2. **Quick Start Guide**
 
