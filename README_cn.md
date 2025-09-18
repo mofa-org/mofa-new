@@ -17,7 +17,7 @@ MoFA 独特的设计类理念是：
 
 ### **1.1.2 技术架构图**
 
-<img src="https://github.com/RelevantStudy/mofasearch/blob/main/hackathons/docs/images/image-20250310010710778.png" alt="image-20250310010710778" style="zoom:67%;" />
+![组织架构图](Organizational_Chart_cn.png )  
 
 # 2. **快速上手指南**
 
@@ -25,22 +25,27 @@ MoFA 独特的设计类理念是：
 
 ### 2.1.1 Python 环境
 
+首先我们需要创造一个纯净的python环境。
+
 ```bash
-# 安装 UV 包管理器 加快mofa安装
-pip install uv
+# 创建venv
+python3 -m venv .mofa
+# 激活venv
+source .mofa/bin/activate
 ```
 
 ### **注意**: 
-- 本地python环境要纯净，不要多个python版本，否则容易导致Dora-rs运行环境和Mofa安装环境的冲突。
-- 如果你的环境使用的是Anaconda / Miniconda，务必将Mofa安装到`Base`环境下，以保证Dora运行环境和Mofa环境的一致。
+- 如果不建立虚拟环境，本地python环境一定要纯净，不要存在多个python版本，否则容易导致Dora-rs运行环境和Mofa安装环境的冲突。
+- 请不要使用Anaconda，默认的conda库里没有mofa-ai
 - 要求python环境为3.10或3.11。
 - 我们目前已在 WSL（Ubuntu 22.04）和 macOS 上进行了测试。Windows 目前不支持。
+
 ### 2.1.2 Rust 环境
 ```bash
 # 安装 Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# 安装 Dora 运行时
+# 出现选择后，直接按enter
+# 安装 Dora 命令行工具
 cargo install dora-cli
 
 # 验证安装
@@ -51,36 +56,21 @@ dora --version
 
 ## 2.2 安装 MoFa
 
-### 2.2.1 Git Clone 方式
 ```bash
-# 克隆仓库
-
-pip install uv && uv pip install -e mofa-ai  
-```
-
-### 2.2.2 Docker 方式
-```bash
-# 进入docker目录
-cd /mofa/python/docker
-# 构建镜像
-docker build -t mofa -f Dockerfile_x86 .
-
-# 运行容器
-docker run -it --rm mofa
-
-# 在容器内验证安装
-mofa --help 
+# 克隆仓库,需要3-4mins 
+pip install mofa-ai
+# 验证安装
+pip show mofa-ai
 ```
 
 ## **2.3 运行第一个Hello World**
 ```bash
-git clone git@github.com:mofa-org/AIOS.git 
+git clone git@github.com:mofa-org/mofa.git
 ```
 
 ### 2.3.1 启动数据流
 ```bash
-cd  AIOS/examples/hello_world
-
+cd mofa/examples/hello_world
 # 启动 Dora 服务
 dora up
 
@@ -91,124 +81,232 @@ dora start hello_world_dataflow.yml
 
 ### 2.3.2 测试交互
 ```bash
+# 打开一个新终端
+# 同样进入创建的虚拟环境
+source .mofa/bin/activate
+
 # 在另一个终端运行输入节点
 terminal-input
-
-# 输入测试数据
-> hello
-# 预期输出: hello
 ```
 
 交互结果示例：
 
 ```
 root@root hello_world % terminal-input                                           
- Send You Task :  你好
+ Send Your Task :  你好
 -------------hello_world_result---------------    
 你好 
----------------------------------------  
- Send You Task :  你是谁   
--------------hello_world_result---------------    
-你是谁    
----------------------------------------
 ```
 
-## **2.4 5分钟开发第一个应用**
+为保证dora进程不残留影响使用，请在每次使用dora后执行
+
+```base
+dora destroy
+```
+### 2.3.3. 常见安装与构建问题解决方法
+
+- ModuleNotFoundError: No module named 'dora'
+ 请执行这两句命令
+    ```bash
+    which pip
+    which python
+    ```
+    请检查pip和python的路径是否一致，都来自创建的虚拟环境，一般为/root/你的文件夹/.mofa/bin/python
+
+
+- RuntimeError: Could not setup node from node id. Make sure to have a running dataflow with this dynamic node
+
+    Caused by:
+        failed to get node config from daemon: multiple dataflows contain dynamic node id terminal-input. Please only have one running dataflow with the specified node id if you want to use dynamic node
+    这是因为有多个dora进程在运行，请执行
+    ```bash
+    pkill dora
+    ```
+    然后重新从启动Dora服务开始运行
+
+## **2.4 6分钟开发第一个应用**
 
 
 本指南将帮助你快速创建一个基于大语言模型的Agent，遵循hello-world的简单实现方式。
 
-### 2.4.1. 创建Agent项目 (1分钟)
 
-使用 MoFa CLI 创建新的 Agent：
-```bash
-# 创建新的 Agent 项目
-mofa new-agent my-llm-agent
-cd my-llm-agent
+可参考的文件架构配置
+```tree
+.
+└── mofa/
+    ├── examples/
+    │   └── my_llm_agent/
+    │       ├── .env.secret
+    │       ├── logs
+    │       ├── my_llm_dataflow.yml
+    │       └── out
+    ├── node-hub/
+    │   └── terminal-input/
+    │       ├── README.md
+    │       ├── pyproject.toml
+    │       ├── terminal_input/
+    │       │   ├── __init__.py
+    │       │   └── main.py
+    │       └── tests/
+    │           └── test.py
+    ├── agent-hub/
+    │   └── my_llm_agent/
+    │       ├── .gitignore
+    │       ├── README.md
+    │       ├── pyproject.toml
+    │       ├── my_llm_agent
+    │       │   ├── __init__.py
+    │       │   ├── __pycache__
+    │       │   │   ├── __init__.cpython-310.pyc
+    │       │   │   └── main.cpython-310.pyc
+    │       │   ├── configs
+    │       │   │   └── agent.yml
+    │       │   └── main.py
+    │       └── tests
+    │            ├── __pycache__
+    │            │   └── test_main.cpython-310.pyc
+    │            └── test_main.py
+    └── README.md
 ```
 
-建议在[mofa_home]的agent-hub子目录下创建新的Agent。
+### 2.4.1. 配置环境变量 (1分钟)
 
-### 2.4.2. 配置环境变量 (1分钟)
+在example的本例文件夹下创建 `.env.secret` 文件
+（需在Dataflow.yml目录同级进行创建，本例中为mofa/examples/my_llm_agent）
 
-创建 `.env.secret` 文件(在Dataflow.yml目录同级进行创建，例如在[mofa_home]/examples下创建项目目录，在该目录下创建。）：
+将以下内容写入`.env.secret`文件
+
+注意要将LLM_API_KEY\LLM_API_BASE\LLM_MODEL替换为你的模型信息
 ```plaintext
 LLM_API_KEY=your_api_key_here
 LLM_API_BASE=https://api.openai.com/v1  # 或其他API地址
 LLM_MODEL=gpt-3.5-turbo  # 或其他模型名称
 ```
 
-### 2.4.3. 实现Agent逻辑 (2分钟)
+### 2.4.2. 创建Agent项目 (1分钟)
+使用 MoFa CLI 创建新的 Agent：
+```bash
+# 在agent_hub路径下创建新的 Agent 项目(本例中为mofa/agent_hub）
+mofa new-agent my_llm_agent
+cd my_llm_agent
+```
 
-编辑 [mofa_home]/agent-hub/my-llm-agent/my_llm_agent/main.py：
+### 2.4.3. 配置agent基本信息 (1分钟)
+在agent-hub的本例文件夹下修改pyproject.toml
+
+（本例文件路径为mofa/agent-hub/my_llm_agent/pyproject.toml）：
+
+```base
+#openai
+[tool.poetry]
+name = "my_llm_agent"
+version = "0.1.0"
+authors = [
+    "youremail@outlook.com",
+]
+description = "An OpenAI LLM agent for MoFA"
+license = "MIT"
+homepage = "https://github.com/your-org/my_llm_agent"
+readme = "README.md"
+packages = [{ include = "my_llm_agent" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+openai = "*"
+python-dotenv = "*"
+
+[tool.poetry.scripts]
+my_llm_agent = "my_llm_agent.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
+```
+
+### 2.4.4. 实现Agent逻辑 (2分钟)
+在agent-hub的本例文件夹下创建main.py
+
+（本例文件路径为mofa/agent-hub/my_llm_agent/main.py）：
+
 ```python
-from mofa.agent_build.base.base_agent import MofaAgent, run_agent
-from openai import OpenAI
+# 以openai为例
 import os
 from dotenv import load_dotenv
+from mofa.agent_build.base.base_agent import MofaAgent, run_agent
+
+
+def call_openai_directly(user_input: str) -> str:
+    import openai
+    client = openai.OpenAI(
+        api_key=os.getenv('LLM_API_KEY'),
+        base_url=os.getenv('LLM_API_BASE')
+    )
+
+    response = client.chat.completions.create(
+        model=os.getenv('LLM_MODEL', 'gpt-3.5-turbo'),
+        messages=[
+            {"role": "system", "content": "You are a helpful AI assistant."},
+            {"role": "user", "content": user_input}
+        ],
+        stream=False
+    )
+    return response.choices[0].message.content
+
 
 @run_agent
 def run(agent: MofaAgent):
     try:
-        # 加载环境变量
         load_dotenv('.env.secret')
-        
-        # 初始化 OpenAI 客户端
-        client = OpenAI(
-            api_key=os.getenv('LLM_API_KEY'),
-            base_url=os.getenv('LLM_API_BASE')
-        )
-        
-        # 接收用户输入
         user_input = agent.receive_parameter('query')
+        agent.write_log(message=f"Received input: {user_input}")
+
+        agent.write_log(message="Handing over to isolated OpenAI function...")
+        llm_result = call_openai_directly(user_input)
+        agent.write_log(message=f"Received result from isolated function: {llm_result}")
         
-        # 调用 LLM
-        response = client.chat.completions.create(
-            model=os.getenv('LLM_MODEL', 'gpt-3.5-turbo'),
-            messages=[
-                {"role": "system", "content": "You are a helpful AI assistant."},
-                {"role": "user", "content": user_input}
-            ],
-            stream=False
-        )
-        
-        # 发送输出
         agent.send_output(
             agent_output_name='llm_result',
-            agent_result=response.choices[0].message.content
+            agent_result=llm_result
         )
-        
     except Exception as e:
-        agent.logger.error(f"Error: {str(e)}")
+        error_message = f"An exception occurred: {str(e)}"
+        
+        # 使用 MofaAgent 正确的日志记录方法
+        agent.write_log(message=error_message, level='ERROR')
+        
+        # 同样将这个错误信息发送出去
         agent.send_output(
             agent_output_name='llm_result',
-            agent_result=f"Error: {str(e)}"
+            agent_result=error_message
         )
 
 def main():
-    agent = MofaAgent(agent_name='my-llm-agent')
+    agent = MofaAgent(agent_name='my_llm_agent')
     run(agent=agent)
 
 if __name__ == "__main__":
     main()
 ```
 
-### 2.4.4. 创建数据流配置 (1分钟)
 
-创建 my_llm_dataflow.yml：（在.env.secret 文件所在目录同级进行创建）
+### 2.4.5. 创建数据流配置 (1分钟)
+
+在example的本例文件夹下创建 my_llm_dataflow.yml
+
+（在.env.secret 文件所在目录同级进行创建，本例文件路径为mofa/examples/my_llm_agent/my_llm_dataflow.yml）
 ```yaml
 nodes:
   - id: terminal-input
-    build: pip install -e ../../node-hub/terminal-input
+    build: pip install ../../node-hub/terminal-input
     path: dynamic
     outputs:
       - data
     inputs:
-      agent_response: my-llm-agent/llm_result
+      agent_response: my_llm_agent/llm_result
 
-  - id: my-llm-agent
-    build: pip install -e ../../agent-hub/my-llm-agent
-    path: my-llm-agent
+  - id: my_llm_agent
+    build: pip install ../../agent-hub/my_llm_agent
+    path: my_llm_agent
     outputs:
       - llm_result
     inputs:
@@ -217,10 +315,11 @@ nodes:
       IS_DATAFLOW_END: true
       WRITE_LOG: true
 ```
-**提示**:
-- 切记案例不要和dataflow放到同一个文件夹下,一定保持在不同的文件夹中
-- 
-### 2.4.5. 运行和测试
+
+### 2.4.6. 运行和测试
+
+确保在example文件夹的本例路径下，然后执行下列命令
+（本例文件路径为mofa/examples/my_llm_agent）
 
 ```bash
 # 启动数据流
@@ -230,10 +329,74 @@ dora start my_llm_dataflow.yml
 
 # 新开终端测试
 terminal-input
-> 你好，请介绍一下自己
 ```
 
-### 2.4.6.代码说明
+### 2.4.7. 常见安装与构建问题解决方法
+1. 进程拥塞问题
+    - 如果出现在新的terminal中输入terminal-input后很久没有反应或对话后很久没有反应，同时伴随
+        ```bash
+        terminal-input: INFO   daemon    node is ready
+        INFO   daemon    all nodes are ready, starting dataflow
+        ```
+        在主terminal中输出了很多次。就像这样：
+        ```bash
+        (.mofa) root@danana:~/mofa-nana/examples/my_llm_agent# dora start my_llm_dataflow.yml
+        dataflow start triggered: 0199584b-c209-76a3-9886-12e7309ac3f0
+        attaching to dataflow (use `--detach` to run in background)
+        my_llm_agent: INFO   daemon    node is ready
+        INFO   daemon    all nodes are ready, starting dataflow
+        terminal-input: INFO   daemon    node is ready
+        INFO   daemon    all nodes are ready, starting dataflow
+        terminal-input: INFO   daemon    node is ready
+        INFO   daemon    all nodes are ready, starting dataflow
+        ```
+        可能是进程拥塞。请进行进程清理。
+        正常情况下输出应该是这样的，如果不是，请自行清理进程。
+        ```bash
+        (.mofa) root@danana:<del>/mofa-nana/examples/my_llm_agent# ps aux | grep my_llm_agent
+        ps aux | grep dora
+        ps aux | grep terminal-input
+        root 211077 0.0 0.0 4028 2304 pts/0 S+ 23:37 0:00 grep --color=auto my_llm_agent
+        root 211079 0.0 0.0 4028 2304 pts/0 S+ 23:37 0:00 grep --color=auto dora
+        root 211081 0.0 0.0 4028 2304 pts/0 S+ 23:37 0:00 grep --color=auto terminal-input
+        ```
+2. 依赖包安装问题
+
+    以下问题执行强制重装指令后请不要再执行dora build，直接进行dora start.
+    - ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory: '/root/mofa_last/.mofa_last/bin/terminal-input'
+        ```bash
+        pip install --force-reinstall --no-deps ../../node-hub/terminal-input
+        ```
+    - ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory: '/root/mofa_last/.mofa_last/bin/my_llm_agent'
+    请执行
+        ```bash
+        pip install --force-reinstall --no-deps ../../agent-hub/my_llm_agent
+        ```
+    - [ERROR]
+        failed to build node `terminal-input`
+
+        Caused by:
+        0: build command failed
+        1: build command `pip install ../../node-hub/terminal-input` returned exit status: 1
+
+        Location:
+            libraries/core/src/build/build_command.rs:79:24
+        ```bash
+        pip install --force-reinstall --no-deps ../../node-hub/terminal-input
+        ```
+    - [ERROR]failed to build node `my_llm_agent`
+
+        Caused by:
+        0: build command failed
+        1: build command `pip install ../../agent-hub/my_llm_agent` returned exit status: 1
+
+        Location:
+            libraries/core/src/build/build_command.rs:79:24
+        ```bash
+        pip install --force-reinstall --no-deps ../../agent-hub/my_llm_agent
+        ```
+
+### 2.4.8.代码说明
 
 1. **使用装饰器**
    - 使用 `@run_agent` 装饰器简化代码结构
@@ -248,7 +411,7 @@ terminal-input
    - 记录错误日志
    - 返回错误信息给用户
 
-### 2.4.7.自定义选项
+### 2.4.9.自定义选项
 
 1. **修改系统提示词**
 ```python
@@ -262,7 +425,7 @@ messages=[
    - 修改 `.env.secret` 中的 API 配置
    - 根据需要调整模型参数
 
-### 2.4.8.注意事项
+### 2.4.10.注意事项
 
 1. 确保 `.env.secret` 已添加到 `.gitignore`
 2. API密钥要妥善保管
@@ -370,7 +533,7 @@ mofa new-agent you_agent_name
 ### 3.1.2 项目结构
 ```
 my-new-agent/
-├── agent/
+├── my-new-agent/
 │   ├── configs/
 │   │   └── agent.yml       # 配置文件
 │   ├── main.py             # 主程序
