@@ -1,3 +1,5 @@
+如果想查看我们重构前的仓库, 请前往[MoFA](https://github.com/moxin-org/mofa)
+
 # **1、MoFA开发框架**
 
 [English](README.md) | [简体中文](README_cn.md)
