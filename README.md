@@ -1,4 +1,4 @@
-This repo is deprecated, please go to [MoFA](https://github.com/mofa-org/mofa)
+# This repo is deprecated, please go to [MoFA](https://github.com/mofa-org/mofa)
 
 # **1. MoFA Development Framework**
 
