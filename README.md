@@ -1,3 +1,5 @@
+For the old repository, please go to [MoFA](https://github.com/moxin-org/mofa)
+
 # **1. MoFA Development Framework**
 
 [English](README.md) | [Simplified Chinese](README_cn.md)
